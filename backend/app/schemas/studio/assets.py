@@ -48,7 +48,7 @@ class AssetImageBase(BaseModel):
     id: int = Field(..., description="图片行 ID")
     quality_level: AssetQualityLevel = Field(AssetQualityLevel.low, description="精度等级")
     view_angle: AssetViewAngle = Field(AssetViewAngle.front, description="视角")
-    url: str = Field(..., description="图片 URL")
+    file_id: str = Field(..., description="关联的 FileItem ID")
     width: int | None = Field(None, description="宽(px)")
     height: int | None = Field(None, description="高(px)")
     format: str = Field("png", description="格式")
@@ -58,7 +58,7 @@ class AssetImageBase(BaseModel):
 class AssetImageCreate(BaseModel):
     quality_level: AssetQualityLevel = AssetQualityLevel.low
     view_angle: AssetViewAngle = AssetViewAngle.front
-    url: str
+    file_id: str
     width: int | None = None
     height: int | None = None
     format: str = "png"
@@ -68,7 +68,7 @@ class AssetImageCreate(BaseModel):
 class AssetImageUpdate(BaseModel):
     quality_level: AssetQualityLevel | None = None
     view_angle: AssetViewAngle | None = None
-    url: str | None = None
+    file_id: str | None = None
     width: int | None = None
     height: int | None = None
     format: str | None = None

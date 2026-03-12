@@ -223,11 +223,6 @@ class Project(Base, TimestampMixin):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    files: Mapped[list["FileItem"]] = relationship(
-        back_populates="project",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
 
     __table_args__ = (
         Index("ix_projects_updated_at", "updated_at"),
@@ -272,7 +267,6 @@ class Chapter(Base, TimestampMixin):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    files: Mapped[list["FileItem"]] = relationship(back_populates="chapter")
 
     __table_args__ = (
         UniqueConstraint("project_id", "index", name="uq_chapters_project_index"),
@@ -878,6 +872,13 @@ class ActorImageImage(Base, TimestampMixin):
         index=True,
         comment="所属演员形象 ID",
     )
+    file_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("files.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="关联的文件 ID（FileItem）",
+    )
     quality_level: Mapped[AssetQualityLevel] = mapped_column(
         String(16),
         nullable=False,
@@ -892,7 +893,6 @@ class ActorImageImage(Base, TimestampMixin):
         index=True,
         comment="视角",
     )
-    url: Mapped[str] = mapped_column(String(2048), nullable=False, comment="图片 URL")
     width: Mapped[int | None] = mapped_column(Integer, nullable=True, comment="宽（px）")
     height: Mapped[int | None] = mapped_column(Integer, nullable=True, comment="高（px）")
     format: Mapped[str] = mapped_column(String(32), nullable=False, default="png", comment="格式")
@@ -927,9 +927,15 @@ class SceneImage(Base, TimestampMixin):
         index=True,
         comment="所属场景 ID",
     )
+    file_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("files.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="关联的文件 ID（FileItem）",
+    )
     quality_level: Mapped[AssetQualityLevel] = mapped_column(String(16), nullable=False, default=AssetQualityLevel.low, index=True, comment="精度等级")
     view_angle: Mapped[AssetViewAngle] = mapped_column(String(32), nullable=False, default=AssetViewAngle.front, index=True, comment="视角")
-    url: Mapped[str] = mapped_column(String(2048), nullable=False, comment="图片 URL")
     width: Mapped[int | None] = mapped_column(Integer, nullable=True)
     height: Mapped[int | None] = mapped_column(Integer, nullable=True)
     format: Mapped[str] = mapped_column(String(32), nullable=False, default="png")
@@ -964,9 +970,15 @@ class PropImage(Base, TimestampMixin):
         index=True,
         comment="所属道具 ID",
     )
+    file_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("files.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="关联的文件 ID（FileItem）",
+    )
     quality_level: Mapped[AssetQualityLevel] = mapped_column(String(16), nullable=False, default=AssetQualityLevel.low, index=True)
     view_angle: Mapped[AssetViewAngle] = mapped_column(String(32), nullable=False, default=AssetViewAngle.front, index=True)
-    url: Mapped[str] = mapped_column(String(2048), nullable=False)
     width: Mapped[int | None] = mapped_column(Integer, nullable=True)
     height: Mapped[int | None] = mapped_column(Integer, nullable=True)
     format: Mapped[str] = mapped_column(String(32), nullable=False, default="png")
@@ -1001,9 +1013,15 @@ class CostumeImage(Base, TimestampMixin):
         index=True,
         comment="所属服装 ID",
     )
+    file_id: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("files.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="关联的文件 ID（FileItem）",
+    )
     quality_level: Mapped[AssetQualityLevel] = mapped_column(String(16), nullable=False, default=AssetQualityLevel.low, index=True)
     view_angle: Mapped[AssetViewAngle] = mapped_column(String(32), nullable=False, default=AssetViewAngle.front, index=True)
-    url: Mapped[str] = mapped_column(String(2048), nullable=False)
     width: Mapped[int | None] = mapped_column(Integer, nullable=True)
     height: Mapped[int | None] = mapped_column(Integer, nullable=True)
     format: Mapped[str] = mapped_column(String(32), nullable=False, default="png")
@@ -1153,28 +1171,16 @@ class FileItem(Base, TimestampMixin):
 
     __tablename__ = "files"
 
-    id: Mapped[str] = mapped_column(String(64), primary_key=True, comment="文件 ID")
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, comment="文件 ID（UUID）")
     type: Mapped[FileType] = mapped_column(String(16), nullable=False, index=True, comment="文件类型")
     name: Mapped[str] = mapped_column(String(255), nullable=False, comment="文件名/标题")
     thumbnail: Mapped[str] = mapped_column(String(1024), nullable=False, default="", comment="缩略图 URL/路径")
     tags: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list, comment="标签（JSON 数组）")
-    project_id: Mapped[str] = mapped_column(
-        String(64),
-        ForeignKey("projects.id", ondelete="CASCADE"),
+    storage_key: Mapped[str] = mapped_column(
+        String(1024),
         nullable=False,
-        index=True,
-        comment="所属项目 ID",
+        comment="对象存储中的 key（如 files/xxx.png）",
     )
-    chapter_id: Mapped[str | None] = mapped_column(
-        String(64),
-        ForeignKey("chapters.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-        comment="所属章节 ID（可空）",
-    )
-
-    project: Mapped["Project"] = relationship(back_populates="files")
-    chapter: Mapped["Chapter"] = relationship(back_populates="files")
 
     __table_args__ = (
         Index("ix_files_updated_at", "updated_at"),

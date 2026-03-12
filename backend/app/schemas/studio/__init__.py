@@ -1,2 +1,8 @@
 """Studio 模块 schemas。"""
 
+from app.schemas.studio.files import (
+    FileCreate,
+    FileRead,
+    FileTypeEnum,
+    FileUpdate,
+)
