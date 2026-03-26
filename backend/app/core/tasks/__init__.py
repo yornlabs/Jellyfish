@@ -11,11 +11,6 @@ from app.core.tasks.image_generation_tasks import (
     ImageGenerationResult,
     ImageGenerationTask,
 )
-from app.core.tasks.agent_tasks import (
-    FilmEntityExtractionTask2,
-    FilmShotlistTask2,
-    ShotFramePromptTask,
-)
 
 __all__ = [
     "ProviderConfig",
@@ -25,7 +20,4 @@ __all__ = [
     "ImageGenerationInput",
     "ImageGenerationResult",
     "ImageGenerationTask",
-    "FilmEntityExtractionTask2",
-    "FilmShotlistTask2",
-    "ShotFramePromptTask",
 ]
