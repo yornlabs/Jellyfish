@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Card, Button, Empty, Modal, Input, message, Space, Select } from 'antd'
 import { PlusOutlined, UserOutlined } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
-import { StudioShotLinksService } from '../../../../../services/generated'
+import { StudioProjectsService, StudioShotLinksService } from '../../../../../services/generated'
 import type { ProjectActorLinkRead, ProjectCostumeLinkRead } from '../../../../../services/generated'
 import { useProjectCharacters, newId } from '../hooks/useProjectData'
 import { resolveAssetUrl } from '../../../assets/utils'
@@ -40,6 +40,7 @@ export function RolesTab() {
   const [actorsById, setActorsById] = useState<Record<string, ActorLike>>({})
   const [costumesById, setCostumesById] = useState<Record<string, CostumeLike>>({})
   const [loadingLinks, setLoadingLinks] = useState(false)
+  const [projectVisualStyle, setProjectVisualStyle] = useState<string>('现实')
 
   const loadProjectLinks = async () => {
     if (!projectId) return
@@ -120,6 +121,21 @@ export function RolesTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
+  useEffect(() => {
+    if (!projectId) return
+    void (async () => {
+      try {
+        const res = await StudioProjectsService.getProjectApiV1StudioProjectsProjectIdGet({ projectId })
+        const style = (res.data as any)?.visual_style
+        if (typeof style === 'string' && style.trim()) {
+          setProjectVisualStyle(style)
+        }
+      } catch {
+        // ignore: fallback to default
+      }
+    })()
+  }, [projectId])
+
   const handleCreateRole = async () => {
     if (!projectId) return
     const name = formName.trim()
@@ -138,6 +154,7 @@ export function RolesTab() {
         project_id: projectId,
         name,
         description: formDesc.trim() || undefined,
+        visual_style: projectVisualStyle || '现实',
         actor_id: formActorId,
         costume_id: formCostumeId ?? null,
       })

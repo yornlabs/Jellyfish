@@ -9,10 +9,13 @@ from pydantic import BaseModel, Field
 from app.models.studio import ChapterStatus, ProjectStyle, ProjectVisualStyle
 
 
+PROJECT_STYLE_EXAMPLES = [x.value for x in ProjectStyle]
+
+
 class ProjectBase(BaseModel):
     name: str = Field(..., description="项目名称")
     description: str = Field("", description="项目简介")
-    style: ProjectStyle = Field(..., description="题材/风格")
+    style: ProjectStyle = Field(..., description="题材/风格", examples=PROJECT_STYLE_EXAMPLES)
     visual_style: ProjectVisualStyle = Field(ProjectVisualStyle.live_action, description="画面表现形式")
     seed: int = Field(0, description="随机种子")
     unify_style: bool = Field(True, description="是否统一风格")
@@ -27,7 +30,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
-    style: ProjectStyle | None = None
+    style: ProjectStyle | None = Field(None, description="题材/风格", examples=PROJECT_STYLE_EXAMPLES)
     visual_style: ProjectVisualStyle | None = None
     seed: int | None = None
     unify_style: bool | None = None

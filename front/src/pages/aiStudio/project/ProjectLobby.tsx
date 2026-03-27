@@ -34,6 +34,22 @@ import type { ProjectRead, ProjectStyle } from '../../../services/generated'
 type ViewMode = 'grid' | 'compact' | 'large'
 type FilterTab = 'all' | 'inProgress' | 'completed' | 'mine' | 'recent'
 type SortKey = 'updatedAt' | 'name' | 'createdAt' | 'chapters'
+type VisualStyleChoice = '现实' | '动漫'
+
+const STYLE_OPTIONS_BY_VISUAL: Record<VisualStyleChoice, Array<{ value: string; label: string }>> = {
+  现实: [
+    { value: '真人都市', label: '真人都市' },
+    { value: '真人科幻', label: '真人科幻' },
+    { value: '真人古装', label: '真人古装' },
+  ],
+  动漫: [
+    { value: '动漫科幻', label: '动漫科幻' },
+    { value: '动漫古装', label: '动漫古装' },
+    { value: '动漫3D', label: '动漫3D' },
+    { value: '国漫', label: '国漫' },
+    { value: '水墨画', label: '水墨画' },
+  ],
+}
 
 const ProjectLobby: React.FC = () => {
   const navigate = useNavigate()
@@ -208,8 +224,11 @@ const ProjectLobby: React.FC = () => {
 
   const handleOpenCreate = () => {
     form.resetFields()
+    const defaultVisual: VisualStyleChoice = '现实'
+    const defaultStyle = STYLE_OPTIONS_BY_VISUAL[defaultVisual][0]?.value
     form.setFieldsValue({
-      style: '现实主义',
+      visual_style: defaultVisual,
+      style: defaultStyle,
       seed: Math.floor(Math.random() * 99999),
       unifyStyle: true,
     })
@@ -220,6 +239,7 @@ const ProjectLobby: React.FC = () => {
     name: string
     description?: string
     style: string
+    visual_style: VisualStyleChoice
     seed: number
     unifyStyle: boolean
   }) => {
@@ -231,6 +251,7 @@ const ProjectLobby: React.FC = () => {
           name: values.name,
           description: values.description ?? '',
           style: values.style as ProjectStyle,
+          visual_style: values.visual_style as any,
           seed: values.seed,
           unify_style: values.unifyStyle,
           progress: 0,
@@ -693,9 +714,9 @@ const ProjectLobby: React.FC = () => {
           layout="vertical"
           onFinish={handleCreateSubmit}
           initialValues={{
-            style: '现实主义',
+            visual_style: '现实',
+            style: '真人都市',
             seed: Math.floor(Math.random() * 99999),
-            visual_style: '动漫',
             unifyStyle: true,
           }}
         >
@@ -709,23 +730,27 @@ const ProjectLobby: React.FC = () => {
           <Form.Item name="description" label="项目简介（选填）">
             <Input.TextArea rows={4} placeholder="项目简介与风格说明，建议 80–120 字" />
           </Form.Item>
-          <Form.Item name="style" label="视频风格" rules={[{ required: true }]}>
+          <Form.Item name="visual_style" label="视觉风格" rules={[{ required: true }]}>
             <Select
+              onChange={(v: VisualStyleChoice) => {
+                const nextStyle = STYLE_OPTIONS_BY_VISUAL[v]?.[0]?.value
+                form.setFieldValue('style', nextStyle)
+              }}
               options={[
-                { value: '现实主义', label: '现实主义' },
-                { value: '科幻', label: '科幻' },
-                { value: '古风', label: '古风' },
-                { value: '都市喜剧', label: '都市喜剧' },
+                { value: '现实', label: '现实' },
+                { value: '动漫', label: '动漫' },
               ]}
             />
           </Form.Item>
-          <Form.Item name="visual_style" label="视觉风格" rules={[{ required: true }]}>
-            <Select
-              options={[
-                { value: '动漫', label: '动漫' },
-                { value: '真人', label: '真人' },
-              ]}
-            />
+          <Form.Item noStyle shouldUpdate={(prev, next) => prev.visual_style !== next.visual_style}>
+            {({ getFieldValue }) => {
+              const visual = (getFieldValue('visual_style') as VisualStyleChoice | undefined) ?? '现实'
+              return (
+                <Form.Item name="style" label="视频风格" rules={[{ required: true }]}>
+                  <Select options={STYLE_OPTIONS_BY_VISUAL[visual]} />
+                </Form.Item>
+              )
+            }}
           </Form.Item>
           <Form.Item
             name="seed"

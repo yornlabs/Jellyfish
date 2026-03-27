@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Card, Input, InputNumber, Row, Col, Tag, Button, message, Modal, Space, Pagination } from 'antd'
+import { Card, Input, InputNumber, Row, Col, Tag, Button, message, Modal, Space, Pagination, Select } from 'antd'
 import { EditOutlined, DeleteOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { resolveAssetUrl } from '../utils'
 import { DisplayImageCard } from '../components/DisplayImageCard'
@@ -75,6 +75,7 @@ export function AssetTypeTab({
   const [formDesc, setFormDesc] = useState('')
   const [formTags, setFormTags] = useState('')
   const [formViewCount, setFormViewCount] = useState<number | null>(null)
+  const [formVisualStyle, setFormVisualStyle] = useState<'现实' | '动漫'>('现实')
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewUrl, setPreviewUrl] = useState('')
@@ -112,6 +113,7 @@ export function AssetTypeTab({
     setFormDesc('')
     setFormTags('')
     setFormViewCount(null)
+    setFormVisualStyle('现实')
     setEditOpen(true)
   }
 
@@ -121,6 +123,7 @@ export function AssetTypeTab({
     setFormDesc(asset.description ?? '')
     setFormTags((asset.tags ?? []).join(', '))
     setFormViewCount(asset.view_count ?? null)
+    setFormVisualStyle(((asset as any).visual_style as '现实' | '动漫' | undefined) ?? '现实')
     setEditOpen(true)
   }
 
@@ -147,6 +150,7 @@ export function AssetTypeTab({
           description: formDesc.trim(),
           tags: normalizeTags(formTags),
           view_count: nextViewCount,
+          visual_style: formVisualStyle,
         })
         const normalizedNext = normalizeAsset(next)
         setAssets((prev) => prev.map((a) => (a.id === editing.id ? normalizedNext : a)))
@@ -158,6 +162,7 @@ export function AssetTypeTab({
           description: formDesc.trim(),
           tags: normalizeTags(formTags),
           thumbnail: '',
+          visual_style: formVisualStyle,
           ...(nextViewCount === null ? {} : { view_count: nextViewCount }),
         })
         message.success('已创建')
@@ -329,6 +334,18 @@ export function AssetTypeTab({
               onChange={(v) => setFormViewCount(v ?? null)}
               className="mt-1 w-full"
               placeholder="例如 4（最大 4）"
+            />
+          </div>
+          <div>
+            <span className="text-gray-600 text-sm">视觉风格</span>
+            <Select
+              className="mt-1 w-full"
+              value={formVisualStyle}
+              onChange={(v) => setFormVisualStyle(v as '现实' | '动漫')}
+              options={[
+                { value: '现实', label: '现实' },
+                { value: '动漫', label: '动漫' },
+              ]}
             />
           </div>
         </div>

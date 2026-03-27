@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
 from app.models.base import TimestampMixin
+from app.models.types import ProjectVisualStyle
 
 
 class Scene(Base, TimestampMixin):
@@ -30,6 +31,12 @@ class Scene(Base, TimestampMixin):
         nullable=True,
         index=True,
         comment="提示词模板 ID",
+    )
+    visual_style: Mapped[ProjectVisualStyle] = mapped_column(
+        String(16),
+        nullable=False,
+        default=ProjectVisualStyle.live_action,
+        comment="画面表现形式（现实/动漫等）",
     )
 
     prompt_template: Mapped["PromptTemplate | None"] = relationship()
@@ -67,6 +74,12 @@ class Prop(Base, TimestampMixin):
         nullable=True,
         index=True,
         comment="提示词模板 ID",
+    )
+    visual_style: Mapped[ProjectVisualStyle] = mapped_column(
+        String(16),
+        nullable=False,
+        default=ProjectVisualStyle.live_action,
+        comment="画面表现形式（现实/动漫等）",
     )
 
     prompt_template: Mapped["PromptTemplate | None"] = relationship()
@@ -109,6 +122,12 @@ class Costume(Base, TimestampMixin):
         nullable=True,
         index=True,
         comment="提示词模板 ID",
+    )
+    visual_style: Mapped[ProjectVisualStyle] = mapped_column(
+        String(16),
+        nullable=False,
+        default=ProjectVisualStyle.live_action,
+        comment="画面表现形式（现实/动漫等）",
     )
 
     prompt_template: Mapped["PromptTemplate | None"] = relationship()
@@ -153,6 +172,12 @@ class Actor(Base, TimestampMixin):
         index=True,
         comment="提示词模板 ID",
     )
+    visual_style: Mapped[ProjectVisualStyle] = mapped_column(
+        String(16),
+        nullable=False,
+        default=ProjectVisualStyle.live_action,
+        comment="画面表现形式（现实/动漫等）",
+    )
 
     prompt_template: Mapped["PromptTemplate | None"] = relationship()
     images: Mapped[list["ActorImage"]] = relationship(
@@ -192,6 +217,12 @@ class Character(Base, TimestampMixin):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False, comment="角色名称")
     description: Mapped[str] = mapped_column(Text, nullable=False, default="", comment="角色描述")
+    visual_style: Mapped[ProjectVisualStyle] = mapped_column(
+        String(16),
+        nullable=False,
+        default=ProjectVisualStyle.live_action,
+        comment="画面表现形式（现实/动漫等）",
+    )
     actor_id: Mapped[str] = mapped_column(
         String(64),
         ForeignKey("actors.id", ondelete="RESTRICT"),

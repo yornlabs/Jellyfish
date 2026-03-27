@@ -10,6 +10,7 @@ import {
   InputNumber,
   Modal,
   Row,
+  Select,
   Space,
   Spin,
   Tag,
@@ -39,6 +40,7 @@ export type AssetUpdate = {
   description: string
   tags: string[]
   view_count: number
+  visual_style: '现实' | '动漫'
 }
 
 const DEFAULT_ANGLES: AssetViewAngle[] = ['FRONT', 'LEFT', 'RIGHT', 'BACK']
@@ -59,6 +61,7 @@ export type BaseAsset = {
   description?: string
   tags?: string[]
   view_count?: number
+  visual_style?: '现实' | '动漫'
 }
 
 export type BaseAssetImage = {
@@ -140,6 +143,7 @@ export function AssetEditPageBase<TAsset extends BaseAsset, TImage extends BaseA
   const [formDesc, setFormDesc] = useState('')
   const [formTags, setFormTags] = useState('')
   const [formViewCount, setFormViewCount] = useState(1)
+  const [formVisualStyle, setFormVisualStyle] = useState<'现实' | '动漫'>('现实')
   const [savingBase, setSavingBase] = useState(false)
 
   const [generatingByImageId, setGeneratingByImageId] = useState<Record<number, boolean>>({})
@@ -201,6 +205,7 @@ export function AssetEditPageBase<TAsset extends BaseAsset, TImage extends BaseA
       setFormName(nextAsset.name)
       setFormDesc(nextAsset.description ?? '')
       setFormTags((nextAsset.tags ?? []).join(', '))
+      setFormVisualStyle(nextAsset.visual_style ?? '现实')
 
       const targetCount = clampViewCount(nextAsset.view_count)
       setFormViewCount(targetCount)
@@ -252,6 +257,7 @@ export function AssetEditPageBase<TAsset extends BaseAsset, TImage extends BaseA
         description: formDesc.trim(),
         tags: normalizeTags(formTags),
         view_count: nextViewCount,
+        visual_style: formVisualStyle,
       }
       const nextAsset = await updateAsset(assetId, payload)
       if (nextAsset) setAsset(nextAsset)
@@ -466,6 +472,18 @@ export function AssetEditPageBase<TAsset extends BaseAsset, TImage extends BaseA
                 <div>
                   <div className="text-gray-600 text-sm mb-1">镜头数（仅可增加，最大 4）</div>
                   <InputNumber min={minViewCount} max={4} precision={0} value={formViewCount} onChange={(v) => setFormViewCount(v ?? minViewCount)} />
+                </div>
+                <div>
+                  <div className="text-gray-600 text-sm mb-1">视觉风格</div>
+                  <Select
+                    style={{ width: 200 }}
+                    value={formVisualStyle}
+                    onChange={(v) => setFormVisualStyle(v as '现实' | '动漫')}
+                    options={[
+                      { value: '现实', label: '现实' },
+                      { value: '动漫', label: '动漫' },
+                    ]}
+                  />
                 </div>
                 <Button type="primary" onClick={() => void handleSaveBaseInfo()} loading={savingBase}>
                   保存基础信息

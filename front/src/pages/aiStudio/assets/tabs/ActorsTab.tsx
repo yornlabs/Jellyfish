@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Empty, Input, InputNumber, Modal, Pagination, Space, Tag, message } from 'antd'
+import { Button, Card, Empty, Input, InputNumber, Modal, Pagination, Select, Space, Tag, message } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { StudioEntitiesApi } from '../../../../services/studioEntities'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +21,7 @@ export function ActorsTab() {
   const [formDesc, setFormDesc] = useState('')
   const [formTags, setFormTags] = useState('')
   const [formViewCount, setFormViewCount] = useState<number | null>(null)
+  const [formVisualStyle, setFormVisualStyle] = useState<'现实' | '动漫'>('现实')
 
   const load = async (opts?: { page?: number; pageSize?: number; q?: string }) => {
     setLoading(true)
@@ -64,6 +65,7 @@ export function ActorsTab() {
     setFormDesc('')
     setFormTags('')
     setFormViewCount(null)
+    setFormVisualStyle('现实')
     setEditOpen(true)
   }
 
@@ -73,6 +75,7 @@ export function ActorsTab() {
     setFormDesc(a.description ?? '')
     setFormTags((a.tags ?? []).join(', '))
     setFormViewCount(a.view_count ?? null)
+    setFormVisualStyle((a.visual_style as '现实' | '动漫' | undefined) ?? '现实')
     setEditOpen(true)
   }
 
@@ -84,21 +87,28 @@ export function ActorsTab() {
     }
     try {
       if (!editing) {
-        await StudioEntitiesApi.create('actor', {
+        const created = await StudioEntitiesApi.create('actor', {
           id: crypto?.randomUUID?.() ?? `actor_${Date.now()}`,
           name,
           description: formDesc.trim() || undefined,
           tags: normalizeTags(formTags),
           view_count: formViewCount ?? undefined,
+          visual_style: formVisualStyle,
           prompt_template_id: null,
         })
         message.success('创建成功')
+        const createdItem = created.data as any
+        if (createdItem && page === 1 && !search.trim()) {
+          setActors((prev) => [createdItem, ...prev.filter((it) => it.id !== createdItem.id)])
+          setTotal((prev) => prev + 1)
+        }
       } else {
         await StudioEntitiesApi.update('actor', editing.id, {
           name,
           description: formDesc.trim() || null,
           tags: normalizeTags(formTags),
           view_count: formViewCount ?? null,
+          visual_style: formVisualStyle,
         })
         message.success('更新成功')
       }
@@ -230,6 +240,18 @@ export function ActorsTab() {
           <div>
             <div className="text-sm text-gray-600 mb-1">视角数（可选）</div>
             <InputNumber className="w-full" min={1} max={4} value={formViewCount} onChange={(v) => setFormViewCount(v ?? null)} />
+          </div>
+          <div>
+            <div className="text-sm text-gray-600 mb-1">视觉风格</div>
+            <Select
+              className="w-full"
+              value={formVisualStyle}
+              onChange={(v) => setFormVisualStyle(v as '现实' | '动漫')}
+              options={[
+                { value: '现实', label: '现实' },
+                { value: '动漫', label: '动漫' },
+              ]}
+            />
           </div>
         </div>
       </Modal>
